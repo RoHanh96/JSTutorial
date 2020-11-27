@@ -22,5 +22,7 @@ saveHighScore = (e) => {
     highScores.splice(5);
 
     localStorage.setItem("highScores", JSON.stringify(highScores));
-    window.location.assign("/");
+    let fullUrl = window.location.href;
+    let shortUrl = fullUrl.substr(0, fullUrl.lastIndexOf('/'));
+    window.location.assign(shortUrl + "/index.html");
 }

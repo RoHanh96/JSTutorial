@@ -10,7 +10,6 @@ const winningCombos = [
     [0, 4, 8],
     [2, 4, 6]
 ];
-
 let board;
 let turn = 'X';
 let win;
@@ -34,13 +33,10 @@ render = () => {
     messages.textContent = win === 'T' ? `That's a tie, queen!` : win ? `${win} wins the games!` : `It's ${turn}'s turn`;
 };
 
+/* Init board */
 init();
 
-/* Event listener */
-document.getElementById('board').addEventListener('click', (event) => {
-    handleTurn(event);
-});
-
+/* Handle turn */
 handleTurn = (event) => {
     let idx = squares.findIndex((square) => {
         return square == event.target;
@@ -64,3 +60,10 @@ getWinner = () => {
 
     return winner ? winner : board.includes('') ? null : 'T';
 };
+
+/* Event listener */
+document.getElementById('board').addEventListener('click', (event) => {
+    handleTurn(event);
+});
+document.getElementById('reset-button').addEventListener('click', init);
+

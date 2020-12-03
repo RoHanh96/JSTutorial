@@ -1,0 +1,17 @@
+{
+  "name": "customer-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^6.2.0",
+    "dotenv": "^8.2.0",
+    "inquirer": "^7.3.3",
+    "mongoose": "^5.11.2"
+  }
+}

@@ -20,7 +20,7 @@ const db = mongoose.connect(process.env.MONGODB_URL, {
 const addCustomer = (customer) => {
     Customer.create(customer).then(customer => {
         console.info('New customer added');
-        db.close();
+        // db.close();
     });
 };
 
@@ -34,12 +34,41 @@ const findCustomer = (name) => {
     ]}).then(customer => {
         console.info(customer);
         console.info(`${customer.length} matches`);
-        db.close();
+        // db.close();
     })
+}
+
+//Update customer
+const updateCustomer = (_id, customer) => {
+    Customer.update({_id}, customer)
+        .then(customer => {
+            console.info('Customer updated');
+        });
+}
+
+
+//Remove customer
+const removeCustomer = (_id) => {
+    Customer.remove({_id})
+        .then(customer => {
+            console.info('Customer removed');
+        });
+}
+
+//List customers
+const listCustomers = () => {
+    Customer.find()
+        .then(customers => {
+            console.info(customers);
+            console.info(`${customers.length} matches`);
+        });
 }
 
 // Export All Methods
 module.exports = {
     addCustomer,
-    findCustomer
+    findCustomer,
+    updateCustomer,
+    removeCustomer,
+    listCustomers
 }

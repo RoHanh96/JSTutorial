@@ -2,6 +2,8 @@ const express = require("express")
 const session = require("express-session")
 const MongoDbStore = require('connect-mongo')(session)
 const flash = require("connect-flash")
+const markdown = require("marked")
+const sanitizeHTML = require("sanitize-html")
 
 const app = express()
 
@@ -15,6 +17,27 @@ let sessionOptions = session({
 
 app.use(sessionOptions)
 app.use(flash())
+
+app.use(function(req, res, next) {
+    //make our markdown function available within ejs template
+    res.locals.filterUserHTML = function(content) {
+        return markdown(sanitizeHTML(markdown(content), {allowedTags: ['p', 'br', 'ul', 'li', 'h1', 'h2', 'bold', 'italic'], allowedAttributes: {}}))
+    }
+    // make all errors and success flash message availabel from all user
+    res.locals.errors = req.flash("errors")
+    res.locals.success = req.flash("success")
+
+    // make current user id available on the req object
+    if (req.session.user) {
+        req.visitorId = req.session.user._id
+    } else {
+        req.visitorId = 0
+    }
+
+    // make user session data available from within view templates
+    res.locals.user = req.session.user
+    next()
+})
 
 const router = require('./router')
 

@@ -21,8 +21,8 @@ Post.prototype.cleanUp = function() {
 
     //get rid of any bogus properties
     this.data = {
-        title: sanitizeHTML(this.data.title.trim(), {allowedTags: [], allowedAttributes: {}}),
-        body: sanitizeHTML(this.data.body.trim(), {allowedTags: [], allowedAttributes: {}}),
+        title: sanitizeHTML(this.data.title.trim(), { allowedTags: [], allowedAttributes: {} }),
+        body: sanitizeHTML(this.data.body.trim(), { allowedTags: [], allowedAttributes: {} }),
         author: ObjectID(this.userId),
         createdDate: new Date()
     }
@@ -58,7 +58,7 @@ Post.prototype.create = function() {
 }
 
 Post.prototype.update = function() {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async(resolve, reject) => {
         try {
             let post = await Post.findSingleById(this.requestedPostId, this.userId)
             if (post.isVisitorOwner) {
@@ -75,11 +75,11 @@ Post.prototype.update = function() {
 }
 
 Post.prototype.actuallyUpdate = function() {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async(resolve, reject) => {
         this.cleanUp()
         this.validate()
         if (!this.errors.length) {
-            await postCollection.findOneAndUpdate({_id: new ObjectID(this.requestedPostId)}, {$set: {title: this.data.title, body: this.data.body}})
+            await postCollection.findOneAndUpdate({ _id: new ObjectID(this.requestedPostId) }, { $set: { title: this.data.title, body: this.data.body } })
             resolve("success")
         } else {
             resolve("failure")
@@ -87,24 +87,24 @@ Post.prototype.actuallyUpdate = function() {
     })
 }
 
-Post.reusablePostQuery = function(uniqueOperations, visitorId) {
+Post.reusablePostQuery = function(uniqueOperations, visitorId, finalOperations = []) {
     return new Promise(async function(resolve, reject) {
-       let aggOperations = uniqueOperations.concat(
-            {$lookup: {from: "users", localField: "author", foreignField: "_id", as: "authorDocument"}},
-            {$project: {
+        let aggOperations = uniqueOperations.concat({ $lookup: { from: "users", localField: "author", foreignField: "_id", as: "authorDocument" } }, {
+            $project: {
                 title: 1,
                 body: 1,
                 createdDate: 1,
                 authorId: "$author",
-                author: {$arrayElemAt: ["$authorDocument", 0]}
-            }}
-       )
+                author: { $arrayElemAt: ["$authorDocument", 0] }
+            }
+        }).concat(finalOperations)
 
         let posts = await postCollection.aggregate(aggOperations).toArray()
 
         // clean up author property in each post object
         posts = posts.map(function(post) {
             post.isVisitorOwner = post.authorId.equals(visitorId)
+            post.authorId = undefined
 
             post.author = {
                 username: post.author.username,
@@ -114,7 +114,7 @@ Post.reusablePostQuery = function(uniqueOperations, visitorId) {
             return post
         })
 
-       resolve(posts)
+        resolve(posts)
     })
 }
 
@@ -126,7 +126,7 @@ Post.findSingleById = function(id, visitorId) {
         }
 
         let posts = await Post.reusablePostQuery([
-            {$match: {_id: new ObjectID(id)}}
+            { $match: { _id: new ObjectID(id) } }
         ], visitorId)
 
         if (posts.length) {
@@ -139,22 +139,35 @@ Post.findSingleById = function(id, visitorId) {
 
 Post.findByAuthorId = function(authorId) {
     return Post.reusablePostQuery([
-        {$match: {author: authorId}},
-        {$sort: {createdDate: -1}}
+        { $match: { author: authorId } },
+        { $sort: { createdDate: -1 } }
     ])
 }
 
 Post.delete = function(postIdToDelete, currentUserId) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async(resolve, reject) => {
         try {
             let post = await Post.findSingleById(postIdToDelete, currentUserId)
             if (post.isVisitorOwner) {
-                await postCollection.deleteOne({_id: new ObjectID(postIdToDelete)})
+                await postCollection.deleteOne({ _id: new ObjectID(postIdToDelete) })
                 resolve()
             } else {
                 reject()
             }
         } catch (error) {
+            reject()
+        }
+    })
+}
+
+Post.search = function(searchTerm) {
+    return new Promise(async(resolve, reject) => {
+        if (typeof(searchTerm) == "string") {
+            let posts = await Post.reusablePostQuery([
+                { $match: { $text: { $search: searchTerm } } }
+            ], undefined, [{ $sort: { score: { $meta: "textScore" } } }])
+            resolve(posts)
+        } else {
             reject()
         }
     })

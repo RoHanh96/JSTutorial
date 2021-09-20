@@ -16,7 +16,7 @@ exports.home = function(req, res) {
     if (req.session.user) {
         res.render('home-dashboard')
     } else {
-        res.render('home-guest', {regErrors: req.flash('regErrors')})
+        res.render('home-guest', { regErrors: req.flash('regErrors') })
     }
 }
 
@@ -31,11 +31,11 @@ exports.register = function(req, res) {
         req.session.save(function() {
             res.redirect('/')
         })
-    }).catch((regErrors)=> {
+    }).catch((regErrors) => {
         regErrors.forEach(function(err) {
-            req.flash('regErrors', err) 
+            req.flash('regErrors', err)
         })
- 
+
         req.session.save(function() {
             res.redirect('/')
         })
@@ -59,7 +59,7 @@ exports.login = function(req, res) {
         req.session.save(function() {
             res.redirect('/')
         })
-    }) 
+    })
 }
 
 exports.logout = function(req, res) {
@@ -69,10 +69,10 @@ exports.logout = function(req, res) {
 }
 
 exports.ifUserExisted = function(req, res, next) {
-    User.findByUsername(req.params.username).then(function(userDocument){
+    User.findByUsername(req.params.username).then(function(userDocument) {
         req.profileUser = userDocument
         next()
-    }).catch(function(){
+    }).catch(function() {
         res.render('404')
     })
 }

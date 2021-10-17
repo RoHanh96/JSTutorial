@@ -17,8 +17,6 @@ router.get('/profile/:username', userController.ifUserExisted, userController.sh
 router.get('/profile/:username/followings', userController.ifUserExisted, userController.sharedProfileData, userController.profileFollowingsScreen)
 router.get('/profile/:username/followers', userController.ifUserExisted, userController.sharedProfileData, userController.profileFollowersScreen)
 
-
-
 //Post routes
 router.get('/create-post', userController.mustBeLoggedIn, postController.viewCreatePost)
 router.post('/create-post', userController.mustBeLoggedIn, postController.create)

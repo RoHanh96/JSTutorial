@@ -2,10 +2,12 @@
     <% if (user && !isVisitorProfile) {
         if (isFollowing) { %>
             <form class="ml-2 d-inline" action="/removeFollow/<%= profileUsername %> " method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="btn btn-danger btn-sm">Stop Following <i class="fas fa-user-times"></i></button>
             </form>
         <% } else { %>
             <form class="ml-2 d-inline" action="/addFollow/<%= profileUsername %> " method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="btn btn-primary btn-sm">Follow <i class="fas fa-user-plus"></i></button>
             </form>
         <% }
